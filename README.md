@@ -14,9 +14,8 @@ Docker and docker compose are required to run this setup.
 To enable **IPv6** (if needed), configure the Docker daemon by editing `/etc/docker/daemon.json` and restart Docker.
 
 ## Running This Tool
-The WireGuard configuration sample provided [here](https://github.com/chadek/docker-Wireguard-Transmission/blob/main/wireguard/wg0.conf) should be filled with proper values and mapped to the WireGuard image by placing it into `/write/your/path/hier`.
-
-The WireGuard config includes a network post-up script to correctly NAT IPv4 through interfaces. More details [here](https://github.com/linuxserver/docker-wireguard).
+The WireGuard configuration sample provided here should be filled with proper values and mapped to the WireGuard image by placing it into [./wireguard/wg0.conf](https://github.com/chadek/docker-Wireguard-Transmission/blob/main/wireguard/wg0.conf).
+The WireGuard config includes a network post-up script to correctly NAT IPv4 through interfaces.
 
 After configuring WireGuard, run the following to start everything:
 
@@ -41,6 +40,8 @@ For IPv6 (if enabled):
 ```
 docker exec transmission sh -c 'curl -6 ifconfig.io'
 ```
+To check VPN stability with multiple attempts, run the `test-vpn.sh` script located in the repository root.
+
 
 ## Managing Transmission
 You can manage Transmission via its web interface in a browser (simple UI) or use [Transmission Remote GUI (transgui)](https://github.com/transmission-remote-gui/transgui) for a more convenient desktop experience.
