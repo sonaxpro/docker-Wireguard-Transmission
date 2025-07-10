@@ -1,51 +1,50 @@
-docker-Wireguard-Transmission
-=========
+# docker-Wireguard-Transmission
 
-A docker compose file for torrenting through a vpn tunnel, using transmission as torrent client and wireguard as vpn tunnel inspirated from [this post](https://www.reddit.com/r/VPNTorrents/comments/j1ap68/my_docker_setup_for_torrenting_transmission/)
+A docker compose setup for torrenting through a VPN tunnel, using Transmission as the torrent client and WireGuard as the VPN tunnel. This project is a fork of [chadek/docker-Wireguard-Transmission](https://github.com/chadek/docker-Wireguard-Transmission) with more precise settings and adjustments.
 
+## Changes in This Fork
+- Updated the docker-compose file with adjusted paths for easier configuration.
+- Disabled IPv6 by default (IPv4-only setup). To enable IPv6, uncomment the relevant lines in the `docker-compose.yml` file.
+- Tested and optimized for WSL (Windows Subsystem for Linux), which bypasses Windows firewalls, TCP stack issues, and Defender for better performance compared to native `.exe` applications.
+- Recommended using [Transmission Remote GUI (transgui)](https://github.com/transmission-remote-gui/transgui) for a simple and effective way to manage Transmission remotely via a browser or desktop app.
 
-Requirements
-------------
+## Requirements
+Docker and docker compose are required to run this setup.
 
-This is a docker-compose file with some configuration samples for wireguard, inside a container, and docker. So the only package required is **docker-compose**. You can install it with something like this on a debian like system:
+To enable **IPv6** (if needed), configure the Docker daemon by editing `/etc/docker/daemon.json` and restart Docker.
 
-```
-apt install docker-compose
-```
+## Running This Tool
+The WireGuard configuration sample provided [here](https://github.com/chadek/docker-Wireguard-Transmission/blob/main/wireguard/wg0.conf) should be filled with proper values and mapped to the WireGuard image by placing it into `/write/your/path/hier`.
 
-To have **ipv6 working**, you should configure docker daemon with the provided **configuration file** by editing the /etc/docker/daemon.json file. Then docker daemon must be reloaded or restart to apply changes with:
+The WireGuard config includes a network post-up script to correctly NAT IPv4 through interfaces. More details [here](https://github.com/linuxserver/docker-wireguard).
 
-```
-systemctl restart docker
-```
-
-Running this tool
-------------
-
-
-Wireguard configuration sample provided [here](https://github.com/chadek/docker-Wireguard-Transmission/blob/main/wireguard/wg0.conf) should be filed with proper values and mapped to the wireguard image by placing it into the path of the mounted volume for the container of that you will choose by replacing  this one */some/path/to/wireguard/config*.
-
-The wireguard config include some network post up script to nat correctly ipv4 through interfaces, more detail [here](https://github.com/linuxserver/docker-wireguard) 
-
-After configuring properly wireguard, a simple run of this will bring everything up:
+After configuring WireGuard, run the following to start everything:
 
 ```
-docker-compose up
+docker compose up
 ```
 
-Or if you want to run as a daemon in background:
+Or to run as a daemon in the background:
 
 ```
-docker-compose up -d 
+docker compose up -d
 ```
 
-To check that torrent client is effectively connected to your vpn ip, you can run the following command:
+To verify that the torrent client is connected to your VPN IP, run:
 
 ```
 docker exec transmission sh -c 'curl -4 ifconfig.io'
 ```
-and this for ipv6:
+
+For IPv6 (if enabled):
 
 ```
 docker exec transmission sh -c 'curl -6 ifconfig.io'
 ```
+
+## Managing Transmission
+You can manage Transmission via its web interface in a browser (simple UI) or use [Transmission Remote GUI (transgui)](https://github.com/transmission-remote-gui/transgui) for a more convenient desktop experience.
+
+## Notes
+- This setup works particularly well on WSL, as it avoids Windows-specific issues like firewalls, TCP stack conflicts, and Windows Defender interference.
+- If you want to re-enable IPv6, simply uncomment the relevant lines in the `docker-compose.yml` file.
