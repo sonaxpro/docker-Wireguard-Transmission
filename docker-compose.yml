@@ -3,14 +3,14 @@ services:
 
   wireguard:
     image: linuxserver/wireguard
-    container_name: wireguard
+    container_name: vpn-wireguard
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
     environment:
       - USER=root
-      - PUID=1001
-      - PGID=1001
+      - PUID=1000
+      - PGID=1000
       - VIRTUAL_HOST=torrent
       - VIRTUAL_PORT=9091
       - TZ=Europe/Berlin
@@ -25,29 +25,61 @@ services:
       # - net.ipv6.conf.all.disable_ipv6=0
       # - net.ipv6.conf.eth0.proxy_ndp=1
     restart: unless-stopped
-
+    healthcheck:
+      test: ["CMD", "wg", "show"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - vpn_network
+      
   
     
     
   
   transmission:
     image: linuxserver/transmission
-    container_name: transmission
+    container_name: vpn-transmission
     environment:
-      - PUID=1001
-      - UGID=1001
+      - PUID=1000
+      - UGID=1000
       - TZ=Europe/Berlin
       # - TRANSMISSION_WEB_HOME=/transmission-web-control/
     volumes:
       - ./transmission-config:/config
-      - /write/your/path/hier:/watch
-      - /write/your/path/hier:/downloads
+      - /mnt/c/Users/Wolfgang/Downloads/Torrent_downloads/watch:/watch
+      - /mnt/c/Users/Wolfgang/Downloads/Torrent_downloads:/downloads
+      # - ./downloads_incomplete:/downloads/incomplete   # на WSL — быстрая запись
+      # - /mnt/c/Users/Wolfgang/Downloads/Torrent_downloads:/downloads/complete  # на Windows
     depends_on:
       - wireguard
     network_mode: service:wireguard
     restart: unless-stopped
-    
 
-# networks:
-  # my-custom-network:
-    # enable_ipv6: true
+
+  socks5proxy-server:
+    image: serjs/go-socks5-proxy
+    container_name: vpn-socks5proxy
+    # environment:
+      # - PROXY_USER=proxy
+      # - PROXY_PASSWORD=proxy
+    network_mode: service:wireguard
+    restart: unless-stopped
+
+
+  socks5proxy-passthrough:
+    image: alpine/socat
+    container_name: vpn-gateway
+    command: tcp-listen:1080,reuseaddr,fork tcp-connect:wireguard:1080
+    ports:
+      - "127.0.0.1:1080:1080"
+    depends_on:
+      - socks5proxy-server
+    networks:
+      - vpn_network
+    restart: unless-stopped
+
+networks:
+  vpn_network:
+    driver: bridge
